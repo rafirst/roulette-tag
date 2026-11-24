@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Neon Roulette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+</head>
+<body>
+<header>
+  <h1>TAG <span>ROULETTE</span></h1>
+  <p>Isi daftar hadiah di samping, lalu putar rodanya.</p>
+</header>
+
+<main id="mainLayout">
+  <section class="stage" aria-label="Roda roulette">
+    <div class="wheel-wrap">
+      <svg class="pointer" id="pointer" viewBox="0 0 44 52" aria-hidden="true"><path d="M22 52 2 10Q0 2 8 2h28q8 0 6 8z" fill="#FAFF00"/><circle cx="22" cy="14" r="5" fill="#0B0E14"/></svg>
+      <canvas id="wheel" aria-label="Roda dengan pilihan hadiah"></canvas>
+    </div>
+    <div class="stage-actions">
+      <button class="btn spin" id="spinBtn">PUTAR</button>
+      <button class="btn small toggle-list" id="toggleList" type="button" aria-controls="side" aria-expanded="true">DAFTAR</button>
+    </div>
+    <div class="sr" id="live" aria-live="polite"></div>
+  </section>
+
+  <aside class="side" id="side">
+    <section class="panel">
+      <h2>DAFTAR HADIAH <span class="count" id="count"></span></h2>
+      <form class="add" id="addForm" onsubmit="return false">
+        <input type="text" id="newItem" maxlength="40" placeholder="Tulis hadiah, tekan Enter" autocomplete="off" aria-label="Nama hadiah baru">
+        <button class="btn small" id="addBtn" type="button">TAMBAH</button>
+      </form>
+      <ul id="items"></ul>
+      <label class="toggle"><input type="checkbox" id="removeWin"> Hapus pemenang dari roda setelah putaran</label>
+      <label class="toggle"><input type="checkbox" id="sound" checked> Suara klik &amp; kemenangan</label>
+      <div class="row">
+        <button class="btn small" id="sample" type="button">CONTOH</button>
+        <button class="btn small warn" id="clear" type="button">KOSONGKAN</button>
+      </div>
+    </section>
+
+    <section class="panel pink">
+      <h2>RIWAYAT PEMENANG <button class="btn small warn" id="clearHist" type="button">HAPUS</button></h2>
+      <ul id="history"></ul>
+      <p class="empty" id="histEmpty">Belum ada putaran. Tekan PUTAR untuk mulai.</p>
+    </section>
+  </aside>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="winName">
+  <div class="modal">
+    <small>PEMENANG</small>
+    <div class="win" id="winName"></div>
+    <div class="row">
+      <button class="btn" id="again">PUTAR LAGI</button>
+      <button class="btn small warn" id="close">TUTUP</button>
+    </div>
+  </div>
+</div>
+<script src="index.js" type="module"></script>
+</body>
+</html>
