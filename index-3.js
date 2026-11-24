@@ -122,14 +122,15 @@
       rot=start+delta*e;
       var i=idxAt(rot);if(i!==lastIdx){lastIdx=i;click()}
       draw();
-      if(p<1)requestAnimationFrame(frame);else finish(win);
+      if(p<1)requestAnimationFrame(frame);else finish();
     })(t0);
   }
-  function finish(win){
+  function finish(){
     spinning=false;
+    var win=idxAt(rot);
     var it=items[win];
     history.unshift(it.t);if(history.length>30)history.pop();
-    $('winName').textContent=it.t;$('badge').hidden=!it.f;$('live').textContent='Pemenang: '+it.t;
+    $('winName').textContent=it.t;$('badge').hidden=fill(win,items.length)!==RED;$('live').textContent='Pemenang: '+it.t;
     $('overlay').classList.add('show');$('again').focus();celebrate();confetti();
     if($('removeWin').checked)items.splice(win,1);
     else{it.stock--;if(it.stock<=0)items.splice(win,1);}
