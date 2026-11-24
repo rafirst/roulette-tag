@@ -4,7 +4,7 @@
   var $=function(id){return document.getElementById(id)};
   var cv=$('wheel'),ctx=cv.getContext('2d');
 
-  try{var s=JSON.parse(localStorage.getItem('tag-items-v2'));if(Array.isArray(s)&&s.length)items=s.slice(0,40).map(function(x){return typeof x==='string'?{t:x,f:false}:{t:String(x.t),f:!!x.f}});}catch(e){}
+  try{var s=JSON.parse(localStorage.getItem('tag-items-v2'));if(Array.isArray(s)&&s.length)items=s.slice(0,40).map(function(x){if(typeof x==='string')return{t:x,f:false,stock:1};var stock=Number(x.stock);return{t:String(x.t),f:!!x.f,stock:Number.isInteger(stock)&&stock>0?Math.min(stock,9999):1}});}catch(e){}
   function save(){try{localStorage.setItem('tag-items-v2',JSON.stringify(items))}catch(e){}}
 
   // merah = hadiah utama; selain itu putih/arang bergantian; segmen terakhir perak bila jumlah ganjil
@@ -24,11 +24,11 @@
       for(var k=1;k<w.length;k++){var a=w.slice(0,k).join(' '),b=w.slice(k).join(' '),m=Math.max(ctx.measureText(a).width,ctx.measureText(b).width);if(m<bw){bw=m;best=[a,b]}}
       fs*=.86;ctx.font='700 '+fs+'px "Plus Jakarta Sans",sans-serif';
       var l=best;
-      while(Math.max(ctx.measureText(l[0]).width,ctx.measureText(l[1]).width)>maxW&&fs>8){fs*=.93;ctx.font='700 '+fs+'px "Plus Jakarta Sans",sans-serif'}
+      while(Math.max(ctx.measureText(l[0]).width,ctx.measureText(l[1]).width)>maxW&&fs>1){fs*=.9;ctx.font='700 '+fs+'px "Plus Jakarta Sans",sans-serif'}
       return{l:l,fs:fs};
     }
-    while(ctx.measureText(t).width>maxW&&t.length>2)t=t.slice(0,-2);
-    return{l:[t.trim()+'…'],fs:fs};
+    while(ctx.measureText(t).width>maxW&&fs>1){fs*=.9;ctx.font='700 '+fs+'px "Plus Jakarta Sans",sans-serif'}
+    return{l:[t],fs:fs};
   }
 
   function draw(){
@@ -55,7 +55,7 @@
       ctx.beginPath();ctx.moveTo(c,c);ctx.arc(c,c,R,a0,a1);ctx.closePath();ctx.fillStyle=f;ctx.fill();
       ctx.strokeStyle=CHROME;ctx.lineWidth=Math.max(2,W*0.004);ctx.stroke();
       ctx.save();ctx.translate(c,c);ctx.rotate(a0+arc/2);ctx.textAlign='right';ctx.textBaseline='middle';
-      var fs=Math.max(W*0.026,Math.min(W*0.05,R*arc*0.3)),res=lines(items[i].t,R*0.56,fs);
+      var fs=Math.min(W*0.05,R*arc*0.22),res=lines(items[i].t,R*0.56,fs);
       ctx.font='700 '+res.fs+'px "Plus Jakarta Sans",sans-serif';ctx.fillStyle=ink(f);
       res.l.forEach(function(tx,k){ctx.fillText(tx,R*0.93,(k-(res.l.length-1)/2)*res.fs*1.12)});
       ctx.restore();
@@ -110,7 +110,7 @@
   }
 
   function spin(){
-    if(spinning||items.length<2)return;
+    if(spinning||items.length===0)return;
     $('overlay').classList.remove('show');
     spinning=true;$('spinBtn').disabled=true;ac();
     var n=items.length,arc=TAU/n,win=Math.floor(Math.random()*n),jitter=(Math.random()-.5)*arc*0.7;
@@ -131,7 +131,9 @@
     history.unshift(it.t);if(history.length>30)history.pop();
     $('winName').textContent=it.t;$('badge').hidden=!it.f;$('live').textContent='Pemenang: '+it.t;
     $('overlay').classList.add('show');$('again').focus();celebrate();confetti();
-    if($('removeWin').checked){items.splice(win,1);save();draw();}
+    if($('removeWin').checked)items.splice(win,1);
+    else{it.stock--;if(it.stock<=0)items.splice(win,1);}
+    save();draw();
     renderList();renderHist();
   }
 
@@ -190,14 +192,15 @@
         e.preventDefault();moveItem(i,to);
       });
       var s=document.createElement('span');s.textContent=it.t;
+      var stock=document.createElement('small');stock.className='stock';stock.textContent='Stok: '+it.stock;
       var st=document.createElement('button');st.className='star';st.type='button';st.textContent='★';st.setAttribute('aria-pressed',it.f);st.setAttribute('aria-label','Tandai '+it.t+' sebagai hadiah utama');
       st.onclick=function(){if(spinning)return;it.f=!it.f;save();renderList();draw()};
       var b=document.createElement('button');b.className='x';b.type='button';b.textContent='×';b.setAttribute('aria-label','Hapus '+it.t);
       b.onclick=function(){if(spinning)return;items.splice(i,1);save();renderList();draw()};
-      li.appendChild(handle);li.appendChild(s);li.appendChild(st);li.appendChild(b);ul.appendChild(li);
+      li.appendChild(handle);li.appendChild(s);li.appendChild(stock);li.appendChild(st);li.appendChild(b);ul.appendChild(li);
     });
     $('count').textContent=items.length+' item';
-    $('spinBtn').disabled=spinning||items.length<2;
+    $('spinBtn').disabled=spinning||items.length===0;
   }
   function renderHist(){
     var ul=$('history');ul.innerHTML='';
@@ -209,7 +212,9 @@
   }
   function add(){
     var v=$('newItem').value.trim();if(!v||spinning||items.length>=40)return;
-    items.push({t:v,f:false});$('newItem').value='';save();renderList();draw();$('newItem').focus();
+    var stockInput=$('newStock');
+    if(!stockInput.checkValidity()){stockInput.reportValidity();stockInput.focus();return}
+    items.push({t:v,f:false,stock:stockInput.valueAsNumber});$('newItem').value='';stockInput.value='1';save();renderList();draw();$('newItem').focus();
   }
 
   $('spinBtn').onclick=spin;$('again').onclick=spin;$('addBtn').onclick=add;
@@ -222,6 +227,7 @@
     side.inert=!expanded;
   };
   $('newItem').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();add()}});
+  $('newStock').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();add()}});
   $('clear').onclick=function(){if(spinning)return;items=[];save();renderList();draw()};
   $('clearHist').onclick=function(){history=[];renderHist()};
   $('close').onclick=function(){$('overlay').classList.remove('show')};

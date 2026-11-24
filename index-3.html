@@ -41,11 +41,12 @@
       <h2>Daftar hadiah <span class="count" id="count"></span></h2>
       <form class="add" onsubmit="return false">
         <input type="text" id="newItem" maxlength="40" placeholder="Tulis hadiah, tekan Enter" autocomplete="off" aria-label="Nama hadiah baru">
+        <label class="stock-field"><span>Stok</span><input type="number" id="newStock" min="1" max="9999" step="1" value="1" required aria-label="Stok hadiah" title="Stok hadiah"></label>
         <button class="btn red" id="addBtn" type="button">Tambah</button>
       </form>
       <ul id="items"></ul>
-      <p class="hint">Tarik pegangan ⠿ untuk mengubah urutan. Klik ★ untuk menandai hadiah utama.</p>
-      <label class="toggle"><input type="checkbox" id="removeWin"> Hapus pemenang dari roda</label>
+      <p class="hint">Stok berkurang 1 setiap menang dan hadiah keluar dari roda saat stok habis. Tarik pegangan ⠿ untuk mengubah urutan.</p>
+      <label class="toggle"><input type="checkbox" id="removeWin"> Hapus hadiah beserta sisa stok setelah menang</label>
       <label class="toggle"><input type="checkbox" id="sound" checked> Aktifkan suara</label>
       <div class="row">
         <button class="btn small" id="clear" type="button">Kosongkan</button>
